@@ -75,6 +75,19 @@ const OLLAMA_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+// 302.ai - Third-party API aggregation platform (OpenAI-compatible)
+// Docs: https://302.ai/price
+const API_302_AI_BASE_URL = "https://api.302.ai/v1";
+const API_302_AI_CN_BASE_URL = "https://api.302ai.cn/v1"; // China mirror
+const API_302_AI_DEFAULT_CONTEXT_WINDOW = 200000;
+const API_302_AI_DEFAULT_MAX_TOKENS = 8192;
+const API_302_AI_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 interface OllamaModel {
   name: string;
   modified_at: string;
@@ -359,6 +372,136 @@ async function buildOllamaProvider(): Promise<ProviderConfig> {
   };
 }
 
+function build302AiProvider(useChinaMirror = false): ProviderConfig {
+  const baseUrl = useChinaMirror ? API_302_AI_CN_BASE_URL : API_302_AI_BASE_URL;
+  return {
+    baseUrl,
+    api: "openai-completions",
+    models: [
+      // Claude Opus 4.5
+      {
+        id: "claude-opus-4-5-20251101",
+        name: "Claude Opus 4.5",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude Sonnet 4.5
+      {
+        id: "claude-sonnet-4-5-20250929",
+        name: "Claude Sonnet 4.5",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude Haiku 4.5
+      {
+        id: "claude-haiku-4-5-20251001",
+        name: "Claude Haiku 4.5",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude Opus 4.1
+      {
+        id: "claude-opus-4-1-20250805",
+        name: "Claude Opus 4.1",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude Opus 4
+      {
+        id: "claude-opus-4-20250514",
+        name: "Claude Opus 4",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude Sonnet 4
+      {
+        id: "claude-sonnet-4-20250514",
+        name: "Claude Sonnet 4",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude 3.7 Sonnet
+      {
+        id: "claude-3-7-sonnet-20250219",
+        name: "Claude 3.7 Sonnet",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude 3.7 Sonnet (Thinking mode - DeepSeek style)
+      {
+        id: "claude-3-7-sonnet-20250219-thinking",
+        name: "Claude 3.7 Sonnet (Thinking)",
+        reasoning: true,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude 3.5 Sonnet (Latest)
+      {
+        id: "claude-3-5-sonnet-20241022",
+        name: "Claude 3.5 Sonnet",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude 3.5 Haiku
+      {
+        id: "claude-3-5-haiku-20241022",
+        name: "Claude 3.5 Haiku",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: API_302_AI_DEFAULT_MAX_TOKENS,
+      },
+      // Claude 3 Opus
+      {
+        id: "claude-3-opus-20240229",
+        name: "Claude 3 Opus",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: 4096,
+      },
+      // Claude 3 Haiku
+      {
+        id: "claude-3-haiku-20240307",
+        name: "Claude 3 Haiku",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: API_302_AI_DEFAULT_COST,
+        contextWindow: API_302_AI_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: 4096,
+      },
+    ],
+  };
+}
+
 export async function resolveImplicitProviders(params: {
   agentDir: string;
 }): Promise<ModelsConfig["providers"]> {
@@ -416,6 +559,16 @@ export async function resolveImplicitProviders(params: {
     resolveApiKeyFromProfiles({ provider: "ollama", store: authStore });
   if (ollamaKey) {
     providers.ollama = { ...(await buildOllamaProvider()), apiKey: ollamaKey };
+  }
+
+  // 302.ai provider - third-party API aggregation platform
+  const api302AiKey =
+    resolveEnvApiKeyVarName("302ai") ??
+    resolveApiKeyFromProfiles({ provider: "302ai", store: authStore });
+  if (api302AiKey) {
+    // Check if should use China mirror based on env var
+    const useChinaMirror = process.env.API_302_AI_CN === "true";
+    providers["302ai"] = { ...build302AiProvider(useChinaMirror), apiKey: api302AiKey };
   }
 
   return providers;

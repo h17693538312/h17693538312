@@ -65,7 +65,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     process.platform === "linux" ? await isSystemdUserServiceAvailable() : true;
   if (process.platform === "linux" && !systemdAvailable) {
     await prompter.note(
-      "Systemd user services are unavailable. Skipping lingering checks and service install.",
+      "Systemd 用户服务不可用。跳过持久化检查和服务安装。",
       "Systemd",
     );
   }
@@ -95,14 +95,14 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     installDaemon = true;
   } else {
     installDaemon = await prompter.confirm({
-      message: "Install Gateway service (recommended)",
+      message: "安装网关服务（推荐）",
       initialValue: true,
     });
   }
 
   if (process.platform === "linux" && !systemdAvailable && installDaemon) {
     await prompter.note(
-      "Systemd user services are unavailable; skipping service install. Use your container supervisor or `docker compose up -d`.",
+      "Systemd 用户服务不可用；跳过服务安装。请使用容器管理器或 `docker compose up -d`。",
       "Gateway service",
     );
     installDaemon = false;
@@ -113,33 +113,33 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       flow === "quickstart"
         ? (DEFAULT_GATEWAY_DAEMON_RUNTIME as GatewayDaemonRuntime)
         : ((await prompter.select({
-            message: "Gateway service runtime",
+            message: "网关服务运行时",
             options: GATEWAY_DAEMON_RUNTIME_OPTIONS,
             initialValue: opts.daemonRuntime ?? DEFAULT_GATEWAY_DAEMON_RUNTIME,
           })) as GatewayDaemonRuntime);
     if (flow === "quickstart") {
       await prompter.note(
-        "QuickStart uses Node for the Gateway service (stable + supported).",
-        "Gateway service runtime",
+        "快速开始使用 Node 作为网关服务运行时（稳定且受支持）。",
+        "网关服务运行时",
       );
     }
     const service = resolveGatewayService();
     const loaded = await service.isLoaded({ env: process.env });
     if (loaded) {
       const action = (await prompter.select({
-        message: "Gateway service already installed",
+        message: "网关服务已安装",
         options: [
-          { value: "restart", label: "Restart" },
-          { value: "reinstall", label: "Reinstall" },
-          { value: "skip", label: "Skip" },
+          { value: "restart", label: "重启" },
+          { value: "reinstall", label: "重新安装" },
+          { value: "skip", label: "跳过" },
         ],
       })) as "restart" | "reinstall" | "skip";
       if (action === "restart") {
         await withWizardProgress(
           "Gateway service",
-          { doneMessage: "Gateway service restarted." },
+          { doneMessage: "网关服务已重启。" },
           async (progress) => {
-            progress.update("Restarting Gateway service…");
+            progress.update("正在重启网关服务…");
             await service.restart({
               env: process.env,
               stdout: process.stdout,
@@ -149,9 +149,9 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       } else if (action === "reinstall") {
         await withWizardProgress(
           "Gateway service",
-          { doneMessage: "Gateway service uninstalled." },
+          { doneMessage: "网关服务已卸载。" },
           async (progress) => {
-            progress.update("Uninstalling Gateway service…");
+            progress.update("正在卸载网关服务…");
             await service.uninstall({ env: process.env, stdout: process.stdout });
           },
         );
@@ -162,7 +162,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       const progress = prompter.progress("Gateway service");
       let installError: string | null = null;
       try {
-        progress.update("Preparing Gateway service…");
+        progress.update("正在准备网关服务…");
         const { programArguments, workingDirectory, environment } = await buildGatewayInstallPlan({
           env: process.env,
           port: settings.port,
@@ -172,7 +172,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
           config: nextConfig,
         });
 
-        progress.update("Installing Gateway service…");
+        progress.update("正在安装网关服务…");
         await service.install({
           env: process.env,
           stdout: process.stdout,
@@ -184,11 +184,11 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
         installError = err instanceof Error ? err.message : String(err);
       } finally {
         progress.stop(
-          installError ? "Gateway service install failed." : "Gateway service installed.",
+          installError ? "网关服务安装失败。" : "网关服务已安装。",
         );
       }
       if (installError) {
-        await prompter.note(`Gateway service install failed: ${installError}`, "Gateway");
+        await prompter.note(`网关服务安装失败: ${installError}`, "网关");
         await prompter.note(gatewayInstallErrorHint(), "Gateway");
       }
     }
@@ -217,7 +217,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
           "https://docs.clawd.bot/gateway/health",
           "https://docs.clawd.bot/gateway/troubleshooting",
         ].join("\n"),
-        "Health check help",
+        "健康检查帮助",
       );
     }
   }
@@ -233,12 +233,12 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
 
   await prompter.note(
     [
-      "Add nodes for extra features:",
-      "- macOS app (system + notifications)",
-      "- iOS app (camera/canvas)",
-      "- Android app (camera/canvas)",
+      "添加节点以获取更多功能：",
+      "- macOS 应用（系统 + 通知）",
+      "- iOS 应用（摄像头/画布）",
+      "- Android 应用（摄像头/画布）",
     ].join("\n"),
-    "Optional apps",
+    "可选应用",
   );
 
   const controlUiBasePath =
@@ -260,8 +260,8 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     password: settings.authMode === "password" ? nextConfig.gateway?.auth?.password : "",
   });
   const gatewayStatusLine = gatewayProbe.ok
-    ? "Gateway: reachable"
-    : `Gateway: not detected${gatewayProbe.detail ? ` (${gatewayProbe.detail})` : ""}`;
+    ? "网关: 可达"
+    : `网关: 未检测到${gatewayProbe.detail ? ` (${gatewayProbe.detail})` : ""}`;
   const bootstrapPath = path.join(
     resolveUserPath(options.workspaceDir),
     DEFAULT_BOOTSTRAP_FILENAME,
@@ -281,7 +281,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     ]
       .filter(Boolean)
       .join("\n"),
-    "Control UI",
+    "控制面板",
   );
 
   let controlUiOpened = false;
@@ -293,31 +293,31 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
     if (hasBootstrap) {
       await prompter.note(
         [
-          "This is the defining action that makes your agent you.",
-          "Please take your time.",
-          "The more you tell it, the better the experience will be.",
-          'We will send: "Wake up, my friend!"',
+          "这是让你的代理成为你的定义性动作。",
+          "请花点时间。",
+          "你告诉它的越多，体验就会越好。",
+          '我们将发送："Wake up, my friend!"',
         ].join("\n"),
-        "Start TUI (best option!)",
+        "启动 TUI（最佳选择！）",
       );
     }
 
     await prompter.note(
       [
-        "Gateway token: shared auth for the Gateway + Control UI.",
-        "Stored in: ~/.clawdbot/clawdbot.json (gateway.auth.token) or CLAWDBOT_GATEWAY_TOKEN.",
-        "Web UI stores a copy in this browser's localStorage (clawdbot.control.settings.v1).",
-        `Get the tokenized link anytime: ${formatCliCommand("clawdbot dashboard --no-open")}`,
+        "网关令牌：网关 + 控制面板的共享认证。",
+        "存储在：~/.clawdbot/clawdbot.json (gateway.auth.token) 或 CLAWDBOT_GATEWAY_TOKEN。",
+        "Web UI 在浏览器的 localStorage 中保存一份副本 (clawdbot.control.settings.v1)。",
+        `随时获取带令牌的链接：${formatCliCommand("clawdbot dashboard --no-open")}`,
       ].join("\n"),
-      "Token",
+      "令牌",
     );
 
     hatchChoice = (await prompter.select({
-      message: "How do you want to hatch your bot?",
+      message: "你想如何启动你的机器人？",
       options: [
-        { value: "tui", label: "Hatch in TUI (recommended)" },
-        { value: "web", label: "Open the Web UI" },
-        { value: "later", label: "Do this later" },
+        { value: "tui", label: "在 TUI 中启动（推荐）" },
+        { value: "web", label: "打开 Web UI" },
+        { value: "later", label: "稍后再说" },
       ],
       initialValue: "tui",
     })) as "tui" | "web" | "later";
@@ -336,7 +336,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       }
       if (seededInBackground) {
         await prompter.note(
-          `Web UI seeded in the background. Open later with: ${formatCliCommand(
+          `Web UI 已在后台初始化。稍后打开：${formatCliCommand(
             "clawdbot dashboard --no-open",
           )}`,
           "Web UI",
@@ -364,33 +364,33 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
         [
           `Dashboard link (with token): ${authedUrl}`,
           controlUiOpened
-            ? "Opened in your browser. Keep that tab to control Clawdbot."
-            : "Copy/paste this URL in a browser on this machine to control Clawdbot.",
+            ? "已在浏览器中打开。保持该标签页以控制 Clawdbot。"
+            : "在此机器的浏览器中复制/粘贴此 URL 以控制 Clawdbot。",
           controlUiOpenHint,
         ]
           .filter(Boolean)
           .join("\n"),
-        "Dashboard ready",
+        "控制台就绪",
       );
     } else {
       await prompter.note(
-        `When you're ready: ${formatCliCommand("clawdbot dashboard --no-open")}`,
-        "Later",
+        `准备好后：${formatCliCommand("clawdbot dashboard --no-open")}`,
+        "稍后",
       );
     }
   } else if (opts.skipUi) {
-    await prompter.note("Skipping Control UI/TUI prompts.", "Control UI");
+    await prompter.note("跳过控制面板/TUI 提示。", "控制面板");
   }
 
   await prompter.note(
-    ["Back up your agent workspace.", "Docs: https://docs.clawd.bot/concepts/agent-workspace"].join(
+    ["备份你的代理工作区。", "文档：https://docs.clawd.bot/concepts/agent-workspace"].join(
       "\n",
     ),
-    "Workspace backup",
+    "工作区备份",
   );
 
   await prompter.note(
-    "Running agents on your computer is risky — harden your setup: https://docs.clawd.bot/security",
+    "在你的电脑上运行代理有风险 - 加固你的设置：https://docs.clawd.bot/security",
     "Security",
   );
 
@@ -428,7 +428,7 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
       ]
         .filter(Boolean)
         .join("\n"),
-      "Dashboard ready",
+      "控制台就绪",
     );
   }
 
@@ -457,19 +457,19 @@ export async function finalizeOnboardingWizard(options: FinalizeOnboardingOption
           "Alternative: set BRAVE_API_KEY in the Gateway environment (no config changes).",
           "Docs: https://docs.clawd.bot/tools/web",
         ].join("\n"),
-    "Web search (optional)",
+    "网页搜索（可选）",
   );
 
   await prompter.note(
-    'What now: https://clawd.bot/showcase ("What People Are Building").',
-    "What now",
+    '接下来做什么：https://clawd.bot/showcase（"大家在做什么"）。',
+    "接下来",
   );
 
   await prompter.outro(
     controlUiOpened
-      ? "Onboarding complete. Dashboard opened with your token; keep that tab to control Clawdbot."
+      ? "引导完成。控制台已用你的令牌打开；保持该标签页以控制 Clawdbot。"
       : seededInBackground
-        ? "Onboarding complete. Web UI seeded in the background; open it anytime with the tokenized link above."
-        : "Onboarding complete. Use the tokenized dashboard link above to control Clawdbot.",
+        ? "引导完成。Web UI 已在后台初始化；随时用上面带令牌的链接打开。"
+        : "引导完成。使用上面带令牌的控制台链接来控制 Clawdbot。",
   );
 }

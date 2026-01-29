@@ -340,10 +340,10 @@ export async function noteStateIntegrity(
   }
 
   if (warnings.length > 0) {
-    note(warnings.join("\n"), "State integrity");
+    note(warnings.join("\n"), "状态完整性");
   }
   if (changes.length > 0) {
-    note(changes.join("\n"), "Doctor changes");
+    note(changes.join("\n"), "诊断修改");
   }
 }
 
@@ -353,10 +353,10 @@ export function noteWorkspaceBackupTip(workspaceDir: string) {
   if (fs.existsSync(gitMarker)) return;
   note(
     [
-      "- Tip: back up the workspace in a private git repo (GitHub or GitLab).",
-      "- Keep ~/.clawdbot out of git; it contains credentials and session history.",
-      "- Details: /concepts/agent-workspace#git-backup-recommended",
+      "- 提示：将工作区备份到私有 git 仓库（GitHub 或 GitLab）。",
+      "- 保持 ~/.clawdbot 不在 git 中；它包含凭证和会话历史。",
+      "- 详情：/concepts/agent-workspace#git-backup-recommended",
     ].join("\n"),
-    "Workspace",
+    "工作区",
   );
 }

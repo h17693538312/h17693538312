@@ -68,7 +68,7 @@ const LOBSTER_ASCII = [
   "█░░░░░█░░░░░█████░█░█░█░█░░█░████░░█░░░█░░█░",
   "█░░░░░█░░░░░█░░░█░█░█░█░█░░█░█░░█░░█░░░█░░█░",
   "░████░█████░█░░░█░░█░█░░███░░████░░░███░░░█░",
-  "              🦞 FRESH DAILY 🦞",
+  "              🦞 每日新鲜 🦞",
 ];
 
 export function formatCliBannerArt(options: BannerOptions = {}): string {
@@ -83,11 +83,11 @@ export function formatCliBannerArt(options: BannerOptions = {}): string {
   };
 
   const colored = LOBSTER_ASCII.map((line) => {
-    if (line.includes("FRESH DAILY")) {
+    if (line.includes("每日新鲜")) {
       return (
         theme.muted("              ") +
         theme.accent("🦞") +
-        theme.info(" FRESH DAILY ") +
+        theme.info(" 每日新鲜 ") +
         theme.accent("🦞")
       );
     }

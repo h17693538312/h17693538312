@@ -285,6 +285,7 @@ export function resolveEnvApiKey(provider: string): EnvApiKeyResult | null {
     venice: "VENICE_API_KEY",
     mistral: "MISTRAL_API_KEY",
     opencode: "OPENCODE_API_KEY",
+    "302ai": "API_302_AI_KEY",
   };
   const envVar = envMap[normalized];
   if (!envVar) return null;

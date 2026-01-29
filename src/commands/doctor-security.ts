@@ -10,7 +10,7 @@ import { isLoopbackHost, resolveGatewayBindHost } from "../gateway/net.js";
 
 export async function noteSecurityWarnings(cfg: ClawdbotConfig) {
   const warnings: string[] = [];
-  const auditHint = `- Run: ${formatCliCommand("clawdbot security audit --deep")}`;
+  const auditHint = `- 运行：${formatCliCommand("clawdbot security audit --deep")}`;
 
   // ===========================================
   // GATEWAY NETWORK EXPOSURE CHECK
@@ -171,7 +171,7 @@ export async function noteSecurityWarnings(cfg: ClawdbotConfig) {
     }
   }
 
-  const lines = warnings.length > 0 ? warnings : ["- No channel security warnings detected."];
+  const lines = warnings.length > 0 ? warnings : ["- 未检测到频道安全警告。"];
   lines.push(auditHint);
-  note(lines.join("\n"), "Security");
+  note(lines.join("\n"), "安全");
 }

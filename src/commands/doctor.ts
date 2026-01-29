@@ -68,7 +68,7 @@ export async function doctorCommand(
 ) {
   const prompter = createDoctorPrompter({ runtime, options });
   printWizardHeader(runtime);
-  intro("Clawdbot doctor");
+  intro("Clawdbot 诊断");
 
   const root = await resolveClawdbotPackageRoot({
     moduleUrl: import.meta.url,
@@ -97,14 +97,14 @@ export async function doctorCommand(
   const configPath = configResult.path ?? CONFIG_PATH_CLAWDBOT;
   if (!cfg.gateway?.mode) {
     const lines = [
-      "gateway.mode is unset; gateway start will be blocked.",
-      `Fix: run ${formatCliCommand("clawdbot configure")} and set Gateway mode (local/remote).`,
-      `Or set directly: ${formatCliCommand("clawdbot config set gateway.mode local")}`,
+      "gateway.mode 未设置；网关启动将被阻止。",
+      `修复：运行 ${formatCliCommand("clawdbot configure")} 并设置网关模式（local/remote）。`,
+      `或直接设置：${formatCliCommand("clawdbot config set gateway.mode local")}`,
     ];
     if (!fs.existsSync(configPath)) {
-      lines.push(`Missing config: run ${formatCliCommand("clawdbot setup")} first.`);
+      lines.push(`缺少配置：请先运行 ${formatCliCommand("clawdbot setup")}。`);
     }
-    note(lines.join("\n"), "Gateway");
+    note(lines.join("\n"), "网关");
   }
 
   cfg = await maybeRepairAnthropicOAuthProfileId(cfg, prompter);
@@ -126,8 +126,8 @@ export async function doctorCommand(
     const needsToken = auth.mode !== "password" && (auth.mode !== "token" || !auth.token);
     if (needsToken) {
       note(
-        "Gateway auth is off or missing a token. Token auth is now the recommended default (including loopback).",
-        "Gateway auth",
+        "网关认证已关闭或缺少令牌。令牌认证现在是推荐的默认方式（包括本地回环）。",
+        "网关认证",
       );
       const shouldSetToken =
         options.generateGatewayToken === true
@@ -135,7 +135,7 @@ export async function doctorCommand(
           : options.nonInteractive === true
             ? false
             : await prompter.confirmRepair({
-                message: "Generate and configure a gateway token now?",
+                message: "现在生成并配置网关令牌？",
                 initialValue: true,
               });
       if (shouldSetToken) {
@@ -151,19 +151,19 @@ export async function doctorCommand(
             },
           },
         };
-        note("Gateway token configured.", "Gateway auth");
+        note("网关令牌已配置。", "网关认证");
       }
     }
   }
 
   const legacyState = await detectLegacyStateMigrations({ cfg });
   if (legacyState.preview.length > 0) {
-    note(legacyState.preview.join("\n"), "Legacy state detected");
+    note(legacyState.preview.join("\n"), "检测到旧版状态");
     const migrate =
       options.nonInteractive === true
         ? true
         : await prompter.confirm({
-            message: "Migrate legacy state (sessions/agent/WhatsApp auth) now?",
+            message: "现在迁移旧版状态（会话/代理/WhatsApp 认证）？",
             initialValue: true,
           });
     if (migrate) {
@@ -171,10 +171,10 @@ export async function doctorCommand(
         detected: legacyState,
       });
       if (migrated.changes.length > 0) {
-        note(migrated.changes.join("\n"), "Doctor changes");
+        note(migrated.changes.join("\n"), "诊断修改");
       }
       if (migrated.warnings.length > 0) {
-        note(migrated.warnings.join("\n"), "Doctor warnings");
+        note(migrated.warnings.join("\n"), "诊断警告");
       }
     }
   }
@@ -282,7 +282,7 @@ export async function doctorCommand(
       runtime.log(`Backup: ${shortenHomePath(backupPath)}`);
     }
   } else {
-    runtime.log(`Run "${formatCliCommand("clawdbot doctor --fix")}" to apply changes.`);
+    runtime.log(`运行 "${formatCliCommand("clawdbot doctor --fix")}" 以应用修改。`);
   }
 
   if (options.workspaceSuggestions !== false) {
@@ -295,12 +295,12 @@ export async function doctorCommand(
 
   const finalSnapshot = await readConfigFileSnapshot();
   if (finalSnapshot.exists && !finalSnapshot.valid) {
-    runtime.error("Invalid config:");
+    runtime.error("无效配置：");
     for (const issue of finalSnapshot.issues) {
       const path = issue.path || "<root>";
       runtime.error(`- ${path}: ${issue.message}`);
     }
   }
 
-  outro("Doctor complete.");
+  outro("诊断完成。");
 }
