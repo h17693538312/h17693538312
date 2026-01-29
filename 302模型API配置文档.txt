@@ -1,5 +1,5 @@
 # Chat（聊天）
-
+sk-xgNKpEOeevhyXMiSa7d64TFVslxYpjJCX18FBQdtqiQpblfb
 ## OpenAPI Specification
 
 ```yaml
